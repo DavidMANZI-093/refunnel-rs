@@ -8,6 +8,6 @@ ahash = "0.8.12"
 hickory-proto = "0.25.2"
 lru = "0.16.3"
 thiserror = "2.0.18"
-tokio = "1.50.0"
+tokio = { version = "1.50.0", features = ["net"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
