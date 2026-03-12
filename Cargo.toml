@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 ahash = "0.8.12"
 hickory-proto = "0.25.2"
+lru = "0.16.3"
 thiserror = "2.0.18"
 tokio = "1.50.0"
 tracing = "0.1.44"
