@@ -5,6 +5,7 @@ use tracing::{debug, error, info, trace};
 
 use crate::{
     core::{Blocklist, DnsPacket, cache::Cache},
+    services::upstream::resolve,
     utils::Result,
 };
 
@@ -61,7 +62,7 @@ impl Server {
         payload: Vec<u8>,
         peer_addr: SocketAddr,
         blocklist: Arc<Blocklist>,
-        _cache: Arc<Cache>,
+        cache: Arc<Cache>,
         socket: Arc<UdpSocket>,
     ) -> Result<()> {
         let message = DnsPacket::parse(&payload)?;
@@ -85,8 +86,14 @@ impl Server {
 
         trace!("ALLOWED: {} (Routing upstream...)", domain);
 
-        // TODO: Requires upstream resolution methods
-        // To be done tomorrow
+        match resolve(&message, &payload, &domain, cache).await {
+            Ok(response_bytes) => {
+                socket.send_to(&response_bytes, peer_addr).await?;
+            }
+            Err(e) => {
+                error!("Failed to resolve {}: {}", domain, e);
+            }
+        }
 
         Ok(())
     }
