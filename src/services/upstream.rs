@@ -22,10 +22,12 @@ pub async fn resolve(
     domain: &str,
     cache: Arc<Cache>,
 ) -> Result<Vec<u8>> {
-    if let Some(_cached_ip) = cache.get(domain) {
-        trace!("Cache HIT for {}", domain);
+    if let Some(cached_ip) = cache.get(domain) {
+        trace!("Cache HIT for {} -> {}", domain, cached_ip);
 
-        // TODO: Implement caching for allowed domains too
+        if let Ok(response_bytes) = DnsPacket::build_cached_response(request, cached_ip) {
+            return Ok(response_bytes);
+        }
     }
 
     trace!(
