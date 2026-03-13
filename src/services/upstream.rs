@@ -4,7 +4,10 @@ use std::{
     time::Duration,
 };
 
-use hickory_proto::{op::Message, rr::RData};
+use hickory_proto::{
+    op::Message,
+    rr::{RData, RecordType},
+};
 use tokio::{net::UdpSocket, time::timeout};
 use tracing::{debug, trace, warn};
 
@@ -23,10 +26,28 @@ pub async fn resolve(
     cache: Arc<Cache>,
 ) -> Result<Vec<u8>> {
     if let Some(cached_ip) = cache.get(domain) {
-        trace!("Cache HIT for {} -> {}", domain, cached_ip);
+        let query_type = request
+            .queries()
+            .first()
+            .map(|q| q.query_type())
+            .unwrap_or(hickory_proto::rr::RecordType::A);
 
-        if let Ok(response_bytes) = DnsPacket::build_cached_response(request, cached_ip) {
-            return Ok(response_bytes);
+        let is_match = matches!(
+            (query_type, cached_ip),
+            (RecordType::A, IpAddr::V4(_)) | (RecordType::AAAA, IpAddr::V6(_))
+        );
+
+        if is_match {
+            trace!("Cache HIT for {} -> {}", domain, cached_ip);
+
+            if let Ok(response_bytes) = DnsPacket::build_cached_response(request, cached_ip) {
+                return Ok(response_bytes);
+            }
+        } else {
+            debug!(
+                "Cache type miss: {} asked for {:?} but cache holds {}",
+                domain, query_type, cached_ip
+            );
         }
     }
 
