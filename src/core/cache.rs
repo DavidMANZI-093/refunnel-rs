@@ -6,7 +6,7 @@ use std::{
 };
 
 use lru::LruCache;
-use tracing::{debug, trace};
+use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct CachedRecord {
@@ -31,7 +31,6 @@ impl Cache {
 
         if let Some(record) = cache.get(domain) {
             if Instant::now() < record.expires_at {
-                trace!("Cache hit for {}", domain);
                 return Some(record.ip);
             } else {
                 debug!("Cache expired for {}", domain);
