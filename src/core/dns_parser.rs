@@ -55,4 +55,35 @@ impl DnsPacket {
 
         response.to_vec().map_err(AppError::Dns)
     }
+
+    pub fn build_cached_response(request: &Message, ip: std::net::IpAddr) -> Result<Vec<u8>> {
+        trace!("Building cached response for query ID: {}", request.id());
+
+        let mut response = Message::new();
+
+        response.set_id(request.id());
+        response.set_message_type(MessageType::Response);
+        response.set_response_code(ResponseCode::NoError);
+        response.add_queries(request.queries().to_vec());
+
+        for query in request.queries() {
+            let mut record = Record::update0(query.name().clone(), 60, query.query_type());
+
+            match (query.query_type(), ip) {
+                (RecordType::A, std::net::IpAddr::V4(ipv4)) => {
+                    record.set_data(RData::A(ipv4.into()));
+                    response.add_answer(record);
+                }
+                (RecordType::AAAA, std::net::IpAddr::V6(ipv6)) => {
+                    record.set_data(RData::AAAA(ipv6.into()));
+                    response.add_answer(record);
+                }
+                _ => {
+                    debug!("Cache type mismatch for: {:?}", query.query_type());
+                }
+            }
+        }
+
+        response.to_vec().map_err(AppError::Dns)
+    }
 }
