@@ -37,7 +37,7 @@ impl Blocklist {
         }
 
         info!(
-            "Blocklist initialized. Loaded {} domain into memory.",
+            "Blocklist initialized. Loaded {} domains into memory.",
             domains.len()
         );
 
