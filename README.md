@@ -20,19 +20,19 @@ Client DNS Query
       │
       ▼
  ┌──────────────┐    blocked?    ┌───────────────────────┐
- │  refunnel    │ ─────────────▶│  Sinkhole Response    │
+ │  refunnel    │ ──────────────▶│  Sinkhole Response    │
  │  (port 53)   │                │  A: 0.0.0.0 / AAAA :: │
  └─────┬────────┘                └───────────────────────┘
        │ allowed
        ▼
  ┌──────────────┐   cache hit?   ┌───────────────────────┐
- │  LRU Cache   │ ─────────────▶│  Cached Response      │
+ │  LRU Cache   │ ──────────────▶│  Cached Response      │
  │ (10k entries)│                │  (TTL-aware)          │
  └─────┬────────┘                └───────────────────────┘
        │ cache miss
        ▼
  ┌──────────────┐                ┌───────────────────────┐
- │  Cloudflare  │ ─────────────▶│  Live Response        │
+ │  Cloudflare  │ ──────────────▶│  Live Response        │
  │  1.1.1.1:53  │                │  (cached for next use)│
  └──────────────┘                └───────────────────────┘
 ```
